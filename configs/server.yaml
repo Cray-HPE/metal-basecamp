@@ -1,0 +1,31 @@
+# Basecamp Configuration
+
+#################
+# Server Info
+#################
+bind: ":8888"
+
+#################
+# Local Service
+#################
+local-mode: true
+local-data: "./configs/data.json"
+
+#################
+# Remote Service
+#################
+
+# If true and local-data passed, inject any missing mac metadata into the remote
+# backend. If the main key (mac) already exists, it is skipped. This is only to
+# facilitate a pivot from local to remote.
+
+# init-local: false
+# remote-endpoint: http://127.0.0.1:2379
+# remote-creds: './creds'
+
+
+#################
+# Static Service
+#################
+serve-static: true
+static-dir: "./static/"
