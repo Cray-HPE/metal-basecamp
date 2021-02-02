@@ -6,8 +6,7 @@ dockerBuildPipeline {
  name = "basecamp"
  description = "Datasource for serving cloud-init metadata."
  dockerfile = "Dockerfile"
- repository = "metal"
- imagePrefix = "metal"
+ repository = "cray"
  product = "csm"
  slackNotification = ["", "", false, true, true, true]
  lintScript = "noop.sh"

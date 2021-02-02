@@ -1,5 +1,5 @@
 # Build...
-FROM        dtr.dev.cray.com/craypc/golang:1.15 as builder
+FROM        dtr.dev.cray.com/baseos/golang:alpine as builder
 # Copy the Go Modules manifests and all third-party libraries that are unlikely to change frequently
 WORKDIR     /workspace
 COPY        go.mod go.mod
