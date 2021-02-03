@@ -7,6 +7,7 @@ dockerBuildPipeline {
  description = "Datasource for serving cloud-init metadata."
  dockerfile = "Dockerfile"
  repository = "cray"
+ imagePrefix = "metal"
  product = "csm"
  slackNotification = ["", "", false, true, true, true]
  lintScript = "noop.sh"

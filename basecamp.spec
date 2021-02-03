@@ -1,5 +1,5 @@
 # Copyright 2021 Hewlett Packard Enterprise Development LP
-Name: cray-basecamp
+Name: cray-metal-basecamp
 License: MIT License
 Summary: Datasource for cloud-init metadata
 BuildArch: x86_64
@@ -18,8 +18,8 @@ Requires: podman-cni-config
 
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
 %define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
-%define basecamp_image dtr.dev.cray.com/cray/basecamp:%{basecamp_tag}
-%define basecamp_file  cray-basecamp-%{basecamp_tag}.tar
+%define basecamp_image dtr.dev.cray.com/cray/metal-basecamp:%{basecamp_tag}
+%define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
 %description
 This RPM installs the daemon file for Basecamp, launched through podman.
