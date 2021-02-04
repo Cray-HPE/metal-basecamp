@@ -9,9 +9,10 @@ fi
 BASECAMP_PIDFILE="$1"
 BASECAMP_CIDFILE="$2"
 BASECAMP_CONTAINER_NAME="${3-basecamp}"
-BASECAMP_HASH=$(rpm -q --queryformat '%{RELEASE}' basecamp | cut -d '_' -f2)
-BASECAMP_CONTAINER_IMAGE="dtr.dev.cray.com/metal/cloud-${BASECAMP_CONTAINER_NAME}:${BASECAMP_TAG:-$(rpm -q --queryformat '%{VERSION}' basecamp)-$BASECAMP_HASH}"
 BASECAMP_VOLUME_NAME="${4:-${BASECAMP_CONTAINER_NAME}-configs}"
+
+BASECAMP_IMAGE_PATH="@@basecamp-path@@"
+BASECAMP_IMAGE="@@basecamp-image@@"
 
 BASECAMP_VOLUME_MOUNT_CONFIG='/var/www/ephemeral/configs:/app/configs:rw,shared'
 BASECAMP_VOLUME_MOUNT_STATIC='/var/www/ephemeral/static:/app/static:rw,shared'
@@ -46,7 +47,7 @@ mkdir -pv "$(echo ${BASECAMP_VOLUME_MOUNT_STATIC} | cut -f 1 -d :)"
 # Create basecamp container
 if ! podman inspect "$BASECAMP_CONTAINER_NAME" ; then
     rm -f "$BASECAMP_CIDFILE" || exit
-    podman pull "$BASECAMP_CONTAINER_IMAGE" || exit
+    podman load -i "$BASECAMP_IMAGE_PATH" || exit
     podman create \
         --conmon-pidfile "$BASECAMP_PIDFILE" \
         --cidfile "$BASECAMP_CIDFILE" \
@@ -57,6 +58,6 @@ if ! podman inspect "$BASECAMP_CONTAINER_NAME" ; then
         --volume $BASECAMP_VOLUME_MOUNT_STATIC \
         --name "$BASECAMP_CONTAINER_NAME" \
         --env GIN_MODE="${GIN_MODE:-release}" \
-        "$BASECAMP_CONTAINER_IMAGE" || exit
+        "$BASECAMP_IMAGE" || exit
     podman inspect "$BASECAMP_CONTAINER_NAME" || exit
 fi
