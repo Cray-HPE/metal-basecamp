@@ -1,4 +1,4 @@
-@Library("dst-shared@release/shasta-1.4") _
+@Library("dst-shared@master") _
 dockerBuildPipeline {
  githubPushRepo = "Cray-HPE/basecamp"
  githubPushBranches = "release/.*|main",
