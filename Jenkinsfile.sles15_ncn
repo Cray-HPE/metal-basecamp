@@ -1,4 +1,4 @@
-@Library("dst-shared@main") _
+@Library("dst-shared@master") _
 rpmBuild (
     specfile : "basecamp.spec",
     product : "csm",
