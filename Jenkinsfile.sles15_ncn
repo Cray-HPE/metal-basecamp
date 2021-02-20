@@ -1,6 +1,7 @@
 @Library("dst-shared@master") _
 rpmBuild (
     specfile : "basecamp.spec",
+    masterBranch : "main",
     product : "csm",
     target_node : "ncn",
     fanout_params: ["sle15sp2"],
