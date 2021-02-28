@@ -47,7 +47,10 @@ mkdir -pv "$(echo ${BASECAMP_VOLUME_MOUNT_STATIC} | cut -f 1 -d :)"
 # Create basecamp container
 if ! podman inspect "$BASECAMP_CONTAINER_NAME" ; then
     rm -f "$BASECAMP_CIDFILE" || exit
-    podman load -i "$BASECAMP_IMAGE_PATH" || exit
+    # Load basecamp image if it doesn't already exist
+    if ! podman image inspect "$BASECAMP_IMAGE" >dev/null; then
+        podman load -i "$BASECAMP_IMAGE_PATH" "$BASECAMP_IMAGE" || exit
+    fi
     podman create \
         --conmon-pidfile "$BASECAMP_PIDFILE" \
         --cidfile "$BASECAMP_CIDFILE" \
