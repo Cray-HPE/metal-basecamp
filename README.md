@@ -44,12 +44,12 @@ daemon can be obtained through linux package managers.
 ##### OpenSuSE / SLES
 
 ```bash
-# Add repo.
+# Add repo. and install metal-basecamp
 $> repo=http://car.dev.cray.com/artifactory/csm/MTL/sle15_sp2_ncn/
 $> zypper addrepo --no-gpgcheck --refresh "$repo" csm-metal
+$> zypper install metal-basecamp
 
-# Install.
-$> zypper install basecamp
+# Enable and start
 $> systemctl enable basecamp
 $> systemctl start basecamp
 ```
