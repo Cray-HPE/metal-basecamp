@@ -1,5 +1,5 @@
 # Copyright 2021 Hewlett Packard Enterprise Development LP
-Name: cray-metal-basecamp
+Name: metal-basecamp
 License: MIT License
 Summary: Datasource for cloud-init metadata
 BuildArch: x86_64
