@@ -45,13 +45,13 @@ daemon can be obtained through linux package managers.
 
 ```bash
 # Add repo.
-$> repo=http://car.dev.cray.com/artifactory/shasta-premium/MTL/sle15_sp2_ncn/noarch/dev/master/
-$> zypper addrepo --no-gpgcheck --refresh "$repo" metal_noarch
+$> repo=http://car.dev.cray.com/artifactory/csm/MTL/sle15_sp2_ncn/
+$> zypper addrepo --no-gpgcheck --refresh "$repo" csm-metal
 
 # Install.
 $> zypper install basecamp
-$> systemctl enable baseamp
-$> systemctl start baseamp
+$> systemctl enable basecamp
+$> systemctl start basecamp
 ```
 ### Logs
 
