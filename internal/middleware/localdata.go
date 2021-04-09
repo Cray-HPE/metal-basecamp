@@ -27,6 +27,8 @@ func getMac(c *gin.Context, defaultkey string) (string, error) {
 	if remoteaddr == "" {
 		remoteaddr = strings.Split(c.Request.RemoteAddr, ":")[0]
 	}
+	log.Printf("Updating arp cache")
+	arp.CacheUpdate()
 	mac := arp.Search(remoteaddr)
 	if mac == "" {
 		log.Printf("Could not find mac for ip '%s', returning '%s'", remoteaddr, defaultkey)
