@@ -18,7 +18,7 @@ Requires: podman-cni-config
 
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
 %define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
-%define basecamp_image dtr.dev.cray.com/cray/metal-basecamp:%{basecamp_tag}
+%define basecamp_image arti.dev.cray.com/cray/metal-basecamp:%{basecamp_tag}
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
 %description
