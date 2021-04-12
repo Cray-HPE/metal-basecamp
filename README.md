@@ -24,7 +24,7 @@ or their local Go-lang env.
 2. Run the container:
 
     ```bash
-   $> image='arti.dev.cray.com/cray/metal-basecamp'
+   $> image='arti.dev.cray.com/csm-docker-master-local/metal-basecamp'
    $> podman create --net host --volume $(pwd)/configs:/app/configs --name basecamp "$image"
     ```
 3. You should now be able to run queries against the container:
