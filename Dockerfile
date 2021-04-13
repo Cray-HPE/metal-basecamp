@@ -1,5 +1,5 @@
 # Build...
-FROM        arti.dev.cray.com/baseos-docker-master-local/golang:alpine as builder
+FROM        dtr.dev.cray.com/baseos/golang:alpine as builder
 # Copy the Go Modules manifests and all third-party libraries that are unlikely to change frequently
 WORKDIR     /workspace
 COPY        go.mod go.mod
@@ -14,7 +14,7 @@ RUN         CGO_ENABLED=0 \
             GO111MODULE=on \
             go build -a -o basecamp ./cmd/main.go
 # Run...
-FROM        arti.dev.cray.com/baseos-docker-master-local/alpine:3
+FROM        dtr.dev.cray.com/baseos/alpine:3.12.0
 WORKDIR     /app
 COPY        configs configs/
 COPY        static/ static/
