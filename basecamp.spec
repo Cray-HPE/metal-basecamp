@@ -17,7 +17,7 @@ Requires: podman-cni-config
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
-%define basecamp_tag   %{version}-${BUILD_METADATA}
+%define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
 %define basecamp_image arti.dev.cray.com/csm-docker-master-local/metal-basecamp:%{basecamp_tag}
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
