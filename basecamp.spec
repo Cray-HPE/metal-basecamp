@@ -16,11 +16,13 @@ Requires: podman-cni-config
 
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
-%define current_branch %(git rev-parse --abbrev-ref HEAD)
+%define current_branch %(git rev-parse --abbrev-ref HEAD | sed -e 's,/.*$,,')
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
 %define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
 %if %{current_branch} == "main"
     %define bucket csm-docker-master-local
+%elif %{current_branch} == "release"
+    %define bucket csm-docker-stable-local
 %else
     %define bucket csm-docker-unstable-local
 %endif
