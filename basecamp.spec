@@ -34,6 +34,7 @@ This RPM installs the daemon file for Basecamp, launched through podman.
 
 %prep
 %setup -q
+echo bucket: %{bucket} tag: %{basecamp_tag} current_branch: %{current_branch}
 timeout 15m sh -c 'until skopeo inspect docker://%{basecamp_image}; do sleep 10; done'
 
 %build
