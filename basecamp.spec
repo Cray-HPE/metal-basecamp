@@ -19,12 +19,16 @@ Requires: podman-cni-config
 %define current_branch %(git rev-parse --abbrev-ref HEAD | sed -e 's,/.*$,,')
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
 %define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
+%define bucket csm-docker-unstable-local
 %if %{current_branch} == "main"
     %define bucket csm-docker-master-local
 %elif %{current_branch} == "release"
     %define bucket csm-docker-stable-local
-%else
-    %define bucket csm-docker-unstable-local
+%elif %{current_branch} == "HEAD"
+    %define current_branch %(git reflog show -1 | awk -F 'moving from ' '{print $2}' | sed -e 's,/.*$,,')
+    %if %{current_branch} == "release"
+        %define bucket csm-docker-stable-local
+    %endif
 %endif
 %define basecamp_image arti.dev.cray.com/%{bucket}/metal-basecamp:%{basecamp_tag}
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
@@ -34,6 +38,7 @@ This RPM installs the daemon file for Basecamp, launched through podman.
 
 %prep
 %setup -q
+echo bucket: %{bucket} tag: %{basecamp_tag} current_branch: %{current_branch}
 timeout 15m sh -c 'until skopeo inspect docker://%{basecamp_image}; do sleep 10; done'
 
 %build
