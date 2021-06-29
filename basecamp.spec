@@ -20,12 +20,15 @@ Requires: podman-cni-config
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
 %define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
 
-%if "%{current_branch}" == "main"
-%define bucket csm-docker-master-local
-%elif "%{current_branch}" == "release"
-%define bucket csm-docker-stable-local
-%else
 %define bucket csm-docker-unstable-local
+%if "%{current_branch}" == "main"
+%undefine bucket
+%define bucket csm-docker-master-local
+%endif
+
+%if "%{current_branch}" == "release"
+%undefine bucket
+%define bucket csm-docker-stable-local
 %endif
 
 %define basecamp_image arti.dev.cray.com/%{bucket}/metal-basecamp:%{basecamp_tag}
