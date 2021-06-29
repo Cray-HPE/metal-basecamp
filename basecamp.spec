@@ -16,20 +16,18 @@ Requires: podman-cni-config
 
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
-%define current_branch %(git rev-parse --abbrev-ref HEAD | sed -e 's,/.*$,,')
+%define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
 %define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
-%define bucket csm-docker-unstable-local
-%if %{current_branch} == "main"
+
+%if "%{current_branch}" == "main"
     %define bucket csm-docker-master-local
-%elif %{current_branch} == "release"
+%elif "%{current_branch}" == "release"
     %define bucket csm-docker-stable-local
-%elif %{current_branch} == "HEAD"
-    %define current_branch %(git reflog show -1 | awk -F 'moving from ' '{print $2}' | sed -e 's,/.*$,,')
-    %if %{current_branch} == "release"
-        %define bucket csm-docker-stable-local
-    %endif
+%else
+    %define bucket csm-docker-unstable-local
 %endif
+
 %define basecamp_image arti.dev.cray.com/%{bucket}/metal-basecamp:%{basecamp_tag}
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
