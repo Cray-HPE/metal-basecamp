@@ -1,5 +1,11 @@
 SHELL := /bin/bash
-VERSION := $(shell cat .version)
+SPEC_VERSION ?= $(shell cat .version)
+BUILD_DIR ?= $(PWD)/dist/rpmbuild
+SPEC_NAME ?= ${GIT_REPO_NAME}
+SPEC_FILE ?= ${SPEC_NAME}.spec
+SOURCE_NAME ?= ${SPEC_NAME}-${SPEC_VERSION}
+SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
+BUILD_METADATA ?= 1~development~"$(shell git rev-parse --short HEAD)"
 
 .PHONY: \
 	help \
@@ -19,6 +25,7 @@ VERSION := $(shell cat .version)
 	version
 
 all: fmt lint vet build
+rpm: rpm_package_source rpm_build_source rpm_build
 
 help:
 	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
@@ -42,6 +49,11 @@ help:
 	@echo ''
 	@echo 'Targets run by default are: fmt, lint, vet, and build.'
 	@echo ''
+
+prepare:
+	rm -rf $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/SPECS $(BUILD_DIR)/SOURCES
+	cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
 
 print-%:
 	@echo $* = $($*)
@@ -94,3 +106,15 @@ doc:
 
 version:
 	@go version
+
+rpm_package_source:
+	tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(SOURCE_PATH) .
+
+rpm_build_source:
+	BUILD_METADATA=$(BUILD_METADATA) rpmbuild --nodeps -ts $(SOURCE_PATH) --define "_topdir $(BUILD_DIR)"
+
+rpm_build:
+	BUILD_METADATA=$(BUILD_METADATA) rpmbuild --nodeps -ba $(SPEC_FILE) --define "_topdir $(BUILD_DIR)"
+
+image:
+	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .

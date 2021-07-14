@@ -14,24 +14,27 @@ Requires: podman
 Requires: podman-cni-config
 %{?systemd_ordering}
 
+%define _unitdir /usr/lib/systemd/system/
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
-%define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
+%define basecamp_tag   %(echo ${VERSION})
 
-%define bucket csm-docker-unstable-local
+%define bucket csm-docker/unstable
 %if "%{current_branch}" == "main"
 %undefine bucket
-%define bucket csm-docker-master-local
+%define bucket csm-docker/unstable
 %endif
 
 %if "%{current_branch}" == "release"
 %undefine bucket
-%define bucket csm-docker-stable-local
+%define bucket csm-docker/stable
 %endif
 
-%define basecamp_image arti.dev.cray.com/%{bucket}/metal-basecamp:%{basecamp_tag}
+# This needs to match what is created for the image
+%define basecamp_image artifactory.algol60.net/%{bucket}/%{name}:%{basecamp_tag}
+
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
 %description
@@ -74,9 +77,8 @@ rm -f %{basecamp_file}
 %license LICENSE
 %doc README.md
 %defattr(-,root,root)
-%{_unitdir}/basecamp.service
-%{_sbindir}/basecamp-init.sh
+%attr(755, root, root) %{_sbindir}/basecamp-init.sh
+%attr(644, root, root) %{_unitdir}/basecamp.service
 %{_sbindir}/rcbasecamp
 %{imagedir}/%{basecamp_file}
-
 %changelog

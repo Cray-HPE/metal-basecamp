@@ -1,0 +1,61 @@
+@Library('csm-shared-library') _
+
+pipeline {
+  agent {
+    label "metal-gcp-builder"
+  }
+
+  options {
+    buildDiscarder(logRotator(numToKeepStr: "10"))
+    timestamps()
+  }
+
+  environment {
+    NAME = sh(returnStdout: true, script: "basename -s .git ${GIT_URL}").trim()
+    GIT_REPO_NAME = sh(returnStdout: true, script: "basename -s .git ${GIT_URL}").trim()
+    DESCRIPTION = "Datasource for cloud-init metadata"
+    IS_STABLE = getBuildIsStable()
+    VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
+    DOCKER_ARGS = getDockerBuildArgs(name: env.NAME, description: env.DESCRIPTION)
+    BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+  }
+
+  stages {
+    stage("Prepare") {
+      steps {
+        runLibraryScript("addRpmMetaData.sh", env.SPEC_FILE)
+        sh "make prepare"
+      }
+    }
+
+    stage('Build: Image') {
+      steps {
+        sh "make image"
+      }
+    }
+
+    stage('Publish: Image') {
+      steps {
+        script {
+          publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: env.IS_STABLE)
+        }
+      }
+    }
+
+    stage('Build: RPM') {
+      steps {
+        sh "make rpm"
+      }
+    }
+
+
+    stage('Publish: RPM') {
+      steps {
+        script {
+          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+        }
+      }
+    }
+  }
+}
