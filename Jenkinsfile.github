@@ -1,0 +1,51 @@
+@Library('csm-shared-library') _
+
+pipeline {
+  agent {
+      label "metal-gcp-builder"
+  }
+
+  options {
+      buildDiscarder(logRotator(numToKeepStr: "10"))
+      timestamps()
+  }
+
+  environment {
+    NAME = "metal-basecamp"
+    SPEC_FILE = "metal-basecamp.spec"
+    DESCRIPTION = "Datasource for serving cloud-init metadata."
+    IS_STABLE = getBuildIsStable()
+    VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
+    BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+  }
+
+  stages {
+    stage("Prepare") {
+      steps {
+        runLibraryScript("addRpmMetaData.sh", env.SPEC_FILE)
+        sh "make prepare"
+      }
+    }
+
+    stage('RPM') {
+      steps {
+        sh "make rpm"
+      }
+    }
+
+    stage('Image') {
+      steps {
+        sh "make image"
+      }
+    }
+
+    stage('Publish ') {
+      steps {
+        script {
+          publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+          publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+        }
+      }
+    }
+  }
+}

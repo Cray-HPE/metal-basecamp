@@ -31,7 +31,7 @@ Requires: podman-cni-config
 %define bucket csm-docker-stable-local
 %endif
 
-%define basecamp_image arti.dev.cray.com/%{bucket}/metal-basecamp:%{basecamp_tag}
+%define basecamp_image arti.dev.cray.com/%{bucket}/basecamp:%{basecamp_tag}
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
 %description
