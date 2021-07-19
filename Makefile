@@ -1,10 +1,10 @@
 SHELL := /bin/bash
 VERSION := $(shell cat .version)
 SPEC_VERSION ?= $(shell cat .version)
-NAME ?= metal-basecamp
+NAME ?= ${GIT_REPO_NAME}
 BUILD_DIR ?= $(PWD)/dist/rpmbuild
-SPEC_NAME ?= metal-basecamp
-SPEC_FILE ?= ${SPEC_NAME}.spec
+git ?= ${NAME}
+SPEC_FILE ?= ${NAME}.spec
 SOURCE_NAME ?= ${SPEC_NAME}-${SPEC_VERSION}
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"

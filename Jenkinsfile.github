@@ -2,21 +2,18 @@
 
 pipeline {
   agent {
-      label "metal-gcp-builder"
+    label "metal-gcp-builder"
   }
 
   options {
-      buildDiscarder(logRotator(numToKeepStr: "10"))
-      timestamps()
+    buildDiscarder(logRotator(numToKeepStr: "10"))
+    timestamps()
   }
 
   environment {
-    NAME = "metal-basecamp"
-    SPEC_FILE = "metal-basecamp.spec"
-    DESCRIPTION = "Datasource for serving cloud-init metadata."
     IS_STABLE = getBuildIsStable()
-    VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
     BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+    GIT_REPO_NAME = sh(returnStdout: true, script: "basename -s .git ${GIT_URL}").trim()
   }
 
   stages {
@@ -27,23 +24,24 @@ pipeline {
       }
     }
 
-    stage('RPM') {
-      steps {
-        sh "make rpm"
-      }
-    }
-
-    stage('Image') {
+    stage('Build: Docker Image') {
       steps {
         sh "make image"
       }
     }
 
-    stage('Publish ') {
+    stage('Build: RPM') {
+      steps {
+        sh "make rpm"
+      }
+    }
+
+
+    stage('Publish') {
       steps {
         script {
-          publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-          publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/RPMS/noarch/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
         }
       }
     }
