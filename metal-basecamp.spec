@@ -18,20 +18,20 @@ Requires: podman-cni-config
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
-%define basecamp_tag   %{version}-%(git rev-parse --short HEAD)
+%define basecamp_tag   %{version}_%(git rev-parse --short HEAD)
 
-%define bucket csm-docker-unstable-local
+%define bucket csm-docker/unstable/metal-basecamp
 %if "%{current_branch}" == "main"
 %undefine bucket
-%define bucket csm-docker-master-local
+%define bucket csm-docker/unstable
 %endif
 
 %if "%{current_branch}" == "release"
 %undefine bucket
-%define bucket csm-docker-stable-local
+%define bucket csm-docker/stable
 %endif
 
-%define basecamp_image arti.dev.cray.com/%{bucket}/basecamp:%{basecamp_tag}
+%define basecamp_image artifactory.algol60.net/%{bucket}/metal-basecamp:%{basecamp_tag}
 %define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
 
 %description
