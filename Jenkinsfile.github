@@ -24,12 +24,6 @@ pipeline {
       }
     }
 
-    stage('Build: Docker Image') {
-      steps {
-        sh "make image"
-      }
-    }
-
     stage('Build: RPM') {
       steps {
         sh "make rpm"
