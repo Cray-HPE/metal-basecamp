@@ -1,6 +1,6 @@
 [Unit]
 Description=Basecamp cloud-init server
-Documentation=https://stash.us.cray.com/projects/MTL/repos/basecamp/browse
+Documentation=https://github.com/Cray-HPE/metal-basecamp/blob/main/README.md
 Requires=network-online.target
 After=network-online.target
 

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 
-	bcMiddleware "stash.us.cray.com/mtl/basecamp/internal/middleware"
+	bcMiddleware "github.com/Cray-HPE/metal-basecamp/internal/middleware"
 )
 
 const (

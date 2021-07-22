@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	bcMiddleware "stash.us.cray.com/mtl/basecamp/internal/middleware"
-	bcRoutes "stash.us.cray.com/mtl/basecamp/internal/routes"
+	bcMiddleware "github.com/Cray-HPE/metal-basecamp/internal/middleware"
+	bcRoutes "github.com/Cray-HPE/metal-basecamp/internal/routes"
 )
 
 func main() {

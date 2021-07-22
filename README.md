@@ -1,5 +1,8 @@
 # Basecamp 
 
+[![Continuous Integration](https://github.com/Cray-HPE/metal-basecamp/actions/workflows/ci.yml/badge.svg)](https://github.com/Cray-HPE/metal-basecamp/actions/workflows/ci.yml)
+
+
 This repo provides the metadata datasource for cloud-init during bootstrap and recovery.
 
 The sister-service, CRAY-BSS, provides this same capability to scale through Kubernetes. Baecamp can be

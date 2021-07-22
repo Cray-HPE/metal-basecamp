@@ -12,6 +12,7 @@ BuildRequires: sed
 BuildRequires: skopeo
 Requires: podman
 Requires: podman-cni-config
+Provides: basecamp
 %{?systemd_ordering}
 
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
@@ -32,7 +33,7 @@ Requires: podman-cni-config
 %endif
 
 %define basecamp_image arti.dev.cray.com/%{bucket}/metal-basecamp:%{basecamp_tag}
-%define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
+%define basecamp_file  metal-basecamp-%{basecamp_tag}.tar
 
 %description
 This RPM installs the daemon file for Basecamp, launched through podman.
