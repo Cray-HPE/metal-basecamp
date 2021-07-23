@@ -6,6 +6,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-gonic/gin v1.7.0
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mostlygeek/arp v0.0.0-20170424181311-541a2129847a
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/spf13/afero v1.3.5 // indirect
