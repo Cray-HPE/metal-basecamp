@@ -70,6 +70,7 @@ test: build
 	go tool cover -html=$(TEST_OUTPUT_DIR)/coverage.out -o "$(TEST_OUTPUT_DIR)/coverage/coverage.html"
 
 tools:
+	go get -u github.com/mattn/go-isatty
 	go get -u github.com/axw/gocov/gocov
 	go get -u github.com/AlekSi/gocov-xml
 	go get -u golang.org/x/lint/golint
