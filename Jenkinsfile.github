@@ -42,7 +42,15 @@ pipeline {
       }
     }
 
-    stage('Build: RPM') {
+    stage('RPM') {
+      agent {
+        docker {
+          image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+          reuseNode true
+           // Run as root
+          args "-u root"
+        }
+      }
       steps {
         sh "make rpm"
       }

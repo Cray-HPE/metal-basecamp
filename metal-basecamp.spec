@@ -14,7 +14,7 @@ Requires: podman
 Requires: podman-cni-config
 %{?systemd_ordering}
 
-%define unitdir /usr/lib/systemd/system/
+# %define _unitdir /usr/lib/systemd/system/
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
@@ -53,7 +53,7 @@ sed -e 's,@@basecamp-image@@,%{basecamp_image},g' \
 skopeo copy docker://%{basecamp_image} docker-archive:%{basecamp_file}
 
 %install
-install -D -m 0644 -t %{buildroot}%{unitdir} init/basecamp.service
+install -D -m 0644 -t %{buildroot}%{_unitdir} init/basecamp.service
 install -D -m 0755 -t %{buildroot}%{_sbindir} init/basecamp-init.sh
 ln -s %{_sbindir}/service %{buildroot}%{_sbindir}/rcbasecamp
 install -D -m 0644 -t %{buildroot}%{imagedir} %{basecamp_file}
@@ -78,7 +78,7 @@ rm -f %{basecamp_file}
 %doc README.md
 %defattr(-,root,root)
 %attr(755, root, root) %{_sbindir}/basecamp-init.sh
-%attr(644, root, root) %{unitdir}/basecamp.service
+%attr(644, root, root) %{_unitdir}/basecamp.service
 %{_sbindir}/rcbasecamp
 %{imagedir}/%{basecamp_file}
 %changelog
