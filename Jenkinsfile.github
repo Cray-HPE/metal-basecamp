@@ -1,5 +1,6 @@
 @Library('csm-shared-library') _
 
+def isStable = env.TAG_NAME != null || env.BRANCH_NAME == 'main' ? true : false
 pipeline {
   agent {
     label "metal-gcp-builder"
@@ -11,13 +12,11 @@ pipeline {
   }
 
   environment {
-    NAME = sh(returnStdout: true, script: "basename -s .git ${GIT_URL}").trim()
-    GIT_REPO_NAME = sh(returnStdout: true, script: "basename -s .git ${GIT_URL}").trim()
     DESCRIPTION = "Datasource for cloud-init metadata"
-    IS_STABLE = getBuildIsStable()
-    VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
-    DOCKER_ARGS = getDockerBuildArgs(name: env.NAME, description: env.DESCRIPTION)
-    BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+    VERSION = getDockerBuildVersion(isStable: isStable)
+    BUILD_METADATA = getRpmRevision(isStable: isStable)
+    GIT_REPO_NAME = getRepoName()
+    DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: env.DESCRIPTION)
   }
 
   stages {
@@ -37,7 +36,7 @@ pipeline {
     stage('Publish: Image') {
       steps {
         script {
-          publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: env.IS_STABLE)
+          publishCsmDockerImage(image: env.GIT_REPO_NAME, tag: env.VERSION, isStable: isStable)
         }
       }
     }
@@ -60,8 +59,8 @@ pipeline {
     stage('Publish: RPM') {
       steps {
         script {
-          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: isStable)
+          publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: isStable)
         }
       }
     }

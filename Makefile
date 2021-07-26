@@ -126,4 +126,4 @@ rpm_build:
 	BUILD_METADATA=$(BUILD_METADATA) rpmbuild --nodeps -ba $(SPEC_FILE) --define "_topdir $(BUILD_DIR)"
 
 image:
-	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+	docker build --pull ${DOCKER_ARGS} --tag '${GIT_REPO_NAME}:${VERSION}' .
