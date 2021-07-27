@@ -16,6 +16,7 @@ pipeline {
     VERSION = getDockerBuildVersion(isStable: isStable)
     BUILD_METADATA = getRpmRevision(isStable: isStable)
     GIT_REPO_NAME = getRepoName()
+    IS_STABLE = "${isStable}"
     DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: env.DESCRIPTION)
   }
 

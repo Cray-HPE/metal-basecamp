@@ -24,17 +24,12 @@ Requires: podman-cni-config
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
 # Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
-%define basecamp_tag   %(echo ${VERSION})
+%define basecamp_tag %(echo ${VERSION})
 
-%define bucket csm-docker/unstable
-%if "%{current_branch}" == "main"
-%undefine bucket
-%define bucket csm-docker/unstable
-%endif
-
-%if "%{current_branch}" == "release"
-%undefine bucket
+%if "%(echo ${IS_STABLE})" == "true"
 %define bucket csm-docker/stable
+%else
+%define bucket csm-docker/unstable
 %endif
 
 # This needs to match what is created for the image
