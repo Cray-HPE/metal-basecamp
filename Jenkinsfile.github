@@ -42,7 +42,7 @@ pipeline {
       }
     }
 
-    stage('RPM') {
+    stage('Build: RPM') {
       agent {
         docker {
           image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
