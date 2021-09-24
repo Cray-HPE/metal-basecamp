@@ -45,7 +45,10 @@ pipeline {
     stage('Build: RPM') {
       agent {
         docker {
-          image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
+		  label 'docker'
+		  image 'artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment:0.0.1'
+		  registryUrl 'https://artifactory.algol60.net/'
+		  registryCredentialsId 'artifactory-algol60'
           reuseNode true
            // Run as root
           args "-u root"
@@ -55,7 +58,6 @@ pipeline {
         sh "make rpm"
       }
     }
-
 
     stage('Publish: RPM') {
       steps {
