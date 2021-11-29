@@ -18,6 +18,7 @@ pipeline {
     GIT_REPO_NAME = getRepoName()
     IS_STABLE = "${isStable}"
     DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: env.DESCRIPTION)
+    GO_VERSION = sh(returnStdout: true, script: 'grep -Eo "^go .*" go.mod | cut -d " " -f2').trim()
   }
 
   stages {
@@ -46,7 +47,7 @@ pipeline {
       agent {
         docker {
 		  label 'docker'
-		  image 'artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment:0.0.1'
+		  image "artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment_golang:${env.GO_VERSION}"
 		  registryUrl 'https://artifactory.algol60.net/'
 		  registryCredentialsId 'artifactory-algol60'
           reuseNode true
