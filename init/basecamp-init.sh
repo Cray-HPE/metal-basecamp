@@ -49,13 +49,12 @@ if ! podman inspect "$BASECAMP_CONTAINER_NAME" ; then
     rm -f "$BASECAMP_CIDFILE" || exit
     # Load basecamp image if it doesn't already exist
     if ! podman image inspect "$BASECAMP_IMAGE" >dev/null; then
-        podman load -i "$BASECAMP_IMAGE_PATH" "$BASECAMP_IMAGE" || exit
+        podman load "$BASECAMP_IMAGE_PATH" "$BASECAMP_IMAGE" || exit
     fi
     podman create \
         --conmon-pidfile "$BASECAMP_PIDFILE" \
         --cidfile "$BASECAMP_CIDFILE" \
         --cgroups=no-conmon \
-        -d \
         --net host \
         --volume $BASECAMP_VOLUME_MOUNT_CONFIG \
         --volume $BASECAMP_VOLUME_MOUNT_STATIC \
