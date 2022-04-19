@@ -8,7 +8,7 @@ fi
 
 BASECAMP_PIDFILE="$1"
 BASECAMP_CIDFILE="$2"
-BASECAMP_CONTAINER_NAME="${3-basecamp}"
+BASECAMP_CONTAINER_NAME="${3-metal\-basecamp}"
 BASECAMP_VOLUME_NAME="${4:-${BASECAMP_CONTAINER_NAME}-configs}"
 
 BASECAMP_IMAGE_PATH="@@basecamp-path@@"
@@ -55,7 +55,6 @@ if ! podman inspect "$BASECAMP_CONTAINER_NAME" ; then
         --conmon-pidfile "$BASECAMP_PIDFILE" \
         --cidfile "$BASECAMP_CIDFILE" \
         --cgroups=no-conmon \
-        -d \
         --net host \
         --volume $BASECAMP_VOLUME_MOUNT_CONFIG \
         --volume $BASECAMP_VOLUME_MOUNT_STATIC \
