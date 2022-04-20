@@ -139,8 +139,6 @@ version:
 	@go version
 
 rpm_package_source:
-	# Install skopeo since it's not in our build container
-	./runBuildPrep.sh
 	tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
