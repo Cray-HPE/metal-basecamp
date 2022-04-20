@@ -22,7 +22,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # Build...
-FROM        arti.dev.cray.com/baseos-docker-master-local/golang:alpine as builder
+FROM        artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment_golang:1.16 as builder
 # Copy the Go Modules manifests and all third-party libraries that are unlikely to change frequently
 WORKDIR     /workspace
 COPY        go.mod go.mod

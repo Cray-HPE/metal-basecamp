@@ -72,7 +72,7 @@ pipeline {
       agent {
         docker {
 		  label 'docker'
-		  image "artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment_golang:${env.GO_VERSION}"
+		  image "artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment:latest"
 		  registryUrl 'https://artifactory.algol60.net/'
 		  registryCredentialsId 'artifactory-algol60'
           reuseNode true
