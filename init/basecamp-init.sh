@@ -23,7 +23,6 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-set -x
 if [ $# -lt 2 ]; then
     echo >&2 "usage: basecamp-init PIDFILE CIDFILE [CONTAINER [VOLUME]]"
     exit 1
@@ -31,8 +30,7 @@ fi
 
 BASECAMP_PIDFILE="$1"
 BASECAMP_CIDFILE="$2"
-BASECAMP_CONTAINER_NAME="${3-metal\-basecamp}"
-BASECAMP_VOLUME_NAME="${4:-${BASECAMP_CONTAINER_NAME}-configs}"
+BASECAMP_CONTAINER_NAME="${3-basecamp}"
 
 BASECAMP_IMAGE_PATH="@@basecamp-path@@"
 BASECAMP_IMAGE="@@basecamp-image@@"
@@ -68,11 +66,16 @@ EOF
 
 mkdir -pv "$(echo ${BASECAMP_VOLUME_MOUNT_STATIC} | cut -f 1 -d :)"
 # Create basecamp container
-if ! podman inspect "$BASECAMP_CONTAINER_NAME" ; then
+if ! podman inspect "$BASECAMP_CONTAINER_NAME" &>dev/null; then
     rm -f "$BASECAMP_CIDFILE" || exit
     # Load basecamp image if it doesn't already exist
-    if ! podman image inspect "$BASECAMP_IMAGE" >dev/null; then
-        podman load "$BASECAMP_IMAGE_PATH" "$BASECAMP_IMAGE" || exit
+    if ! podman image inspect "$BASECAMP_IMAGE" &>dev/null; then
+        # load the image
+        podman load -i "$BASECAMP_IMAGE_PATH" || exit
+        # get the image id
+        BASECAMP_IMAGE_ID=$(podman images --noheading --format "{{.Id}}" --filter label="org.label-schema.name=$BASECAMP_CONTAINER_NAME")
+        # tag the image
+        podman tag "$BASECAMP_IMAGE_ID" "$BASECAMP_IMAGE"
     fi
     podman create \
         --conmon-pidfile "$BASECAMP_PIDFILE" \

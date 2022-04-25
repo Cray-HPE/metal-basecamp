@@ -11,7 +11,9 @@ ExecStartPre=/usr/sbin/basecamp-init.sh %t/%n-pid %t/%n-cid basecamp
 ExecStart=/usr/bin/podman start basecamp
 ExecStop=/usr/bin/podman stop --ignore -t 10 basecamp
 PIDFile=%t/%n-pid
-KillMode=none
+# all remaining processes in the control group of this unit will be killed on unit stop
+# https://www.suse.com/support/kb/doc/?id=000020394
+KillMode=control-group
 Type=forking
 
 [Install]
