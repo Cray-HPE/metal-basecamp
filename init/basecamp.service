@@ -7,8 +7,7 @@ After=network-online.target
 [Service]
 Restart=on-failure
 Environment=GIN_MODE=release
-ExecStartPre=/usr/sbin/basecamp-init.sh %t/%n-pid %t/%n-cid basecamp
-ExecStart=/usr/bin/podman start basecamp
+ExecStart=/usr/sbin/basecamp-init.sh %t/%n-pid %t/%n-cid basecamp
 ExecStop=/usr/bin/podman stop --ignore -t 10 basecamp
 PIDFile=%t/%n-pid
 # all remaining processes in the control group of this unit will be killed on unit stop
