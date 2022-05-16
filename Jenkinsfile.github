@@ -25,8 +25,10 @@
  */
 @Library('csm-shared-library') _
 
-def isStable = env.TAG_NAME != null || env.BRANCH_NAME == 'main' ? true : false
+def promotionToken = ~"(main|release\\/.*)"
+def isStable = env.TAG_NAME != null || env.BRANCH_NAME ==~ promotionToken ? true : false
 pipeline {
+
   agent {
     label "metal-gcp-builder"
   }
@@ -37,17 +39,16 @@ pipeline {
   }
 
   environment {
-    DESCRIPTION = "Datasource for cloud-init metadata"
-    VERSION = getDockerBuildVersion(isStable: isStable)
     BUILD_METADATA = getRpmRevision(isStable: isStable)
-    GIT_REPO_NAME = getRepoName()
-    IS_STABLE = "${isStable}"
     DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: env.DESCRIPTION)
+    GIT_REPO_NAME = getRepoName()
     GO_VERSION = sh(returnStdout: true, script: 'grep -Eo "^go .*" go.mod | cut -d " " -f2').trim()
+    VERSION = getDockerBuildVersion(isStable: isStable)
   }
 
   stages {
-    stage("Prepare") {
+
+    stage("Prepare: RPM") {
       steps {
         runLibraryScript("addRpmMetaData.sh", env.SPEC_FILE)
         sh "make prepare"
@@ -72,12 +73,9 @@ pipeline {
       agent {
         docker {
 		  label 'docker'
-		  image "artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment:latest"
-		  registryUrl 'https://artifactory.algol60.net/'
-		  registryCredentialsId 'artifactory-algol60'
           reuseNode true
-           // Run as root
-          args "-u root"
+		  image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:${env.GO_VERSION}"
+          args "-v ${env.WORKSPACE}:/workspace"
         }
       }
       steps {
@@ -88,7 +86,6 @@ pipeline {
     stage('Publish: RPM') {
       steps {
         script {
-          postChownFiles()
           publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: isStable)
           publishCsmRpms(component: env.GIT_REPO_NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: isStable)
         }
@@ -98,7 +95,6 @@ pipeline {
 
   post {
     always {
-      // Own files so jenkins can clean them up later
       postChownFiles()
     }
   }
