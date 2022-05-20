@@ -49,8 +49,15 @@ pipeline {
   stages {
 
     stage("Prepare: RPM") {
+      agent {
+        docker {
+		  label 'docker'
+          reuseNode true
+		  image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:${env.GO_VERSION}"
+        }
+      }
       steps {
-        runLibraryScript("addRpmMetaData.sh", env.SPEC_FILE)
+        runLibraryScript("addRpmMetaData.sh", "${env.GIT_REPO_NAME}.spec")
         sh "make prepare"
       }
     }
