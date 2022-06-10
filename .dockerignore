@@ -1,8 +1,10 @@
 .gitignore
 .git/
-.version
-Jenkinsfile
-README.md
-# Do not include this, it is installed by the RPM.
+.github/
+.dockerignore
+bin/
+build/
+Dockerfile
 init/
-run*.sh
+Jenkinsfile*
+metal-basecamp.spec

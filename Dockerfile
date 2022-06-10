@@ -21,25 +21,18 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-# Build...
-FROM        artifactory.algol60.net/csm-docker/stable/sle15sp3_build_environment_golang:1.16 as builder
-# Copy the Go Modules manifests and all third-party libraries that are unlikely to change frequently
+FROM        artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:1.18 as builder
 WORKDIR     /workspace
-COPY        go.mod go.mod
-COPY        go.sum go.sum
-# Copy the go source...
-COPY        configs configs/
-COPY        cmd/ cmd/
-COPY        internal/ internal/
+COPY        . ./
+
 RUN         CGO_ENABLED=0 \
             GOOS=linux \
             GOARCH=amd64 \
             GO111MODULE=on \
-            go build -a -o basecamp ./cmd/main.go
-# Run...
-FROM        arti.dev.cray.com/baseos-docker-master-local/alpine:3
+            make build
+
+FROM        artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.15
 WORKDIR     /app
-COPY        configs configs/
-COPY        static/ static/
-COPY        --from=builder /workspace/basecamp .
+COPY        configs static ./
+COPY        --from=builder /workspace/bin/basecamp .
 ENTRYPOINT  ["/app/basecamp"]
