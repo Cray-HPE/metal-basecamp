@@ -3,8 +3,8 @@ Name: metal-basecamp
 License: MIT License
 Summary: Datasource for cloud-init metadata
 BuildArch: x86_64
-Version: %(cat .version)
-Release: %(echo ${BUILD_METADATA})
+Version: %(echo $VERSION)
+Release: 1
 Source: %{name}-%{version}.tar.bz2
 Vendor: Cray Inc.
 BuildRequires: coreutils
