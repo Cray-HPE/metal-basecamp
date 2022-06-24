@@ -29,7 +29,7 @@ on:
       - '*'
     tags:
       # semver tags:
-      - 'v[12].[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches: [ main ]
 
@@ -37,22 +37,20 @@ jobs:
 
   test:
     name: Lint and Unit Tests
-    runs-on: redbull
+    runs-on: ubuntu-latest
     steps:
-    - name: env
-      run: |
-        env
-        whoami
     - uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
         go-version: 1.18
 
     - name: Lint
       run: |
+        make tools
         make lint
       
     - name: Test
-      run: make test
+      run: |
+        make test
+
