@@ -146,4 +146,4 @@ rpm_build:
 	rpmbuild --nodeps -ba $(SPEC_FILE) --define "_topdir $(BUILD_DIR)"
 
 image:
-	docker build --pull ${DOCKER_ARGS} --tag '${GIT_REPO_NAME}:${VERSION}' .
+	docker build --pull --tag '${GIT_REPO_NAME}:${VERSION}' .
