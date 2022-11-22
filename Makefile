@@ -152,4 +152,4 @@ version:
 	@go version
 
 image:
-	docker build --pull --tag '${NAME}:${VERSION}' .
+	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
