@@ -24,6 +24,10 @@
 @Library('csm-shared-library') _
 
 def goImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go'
+
+// Define the distro that the major.minor and major.minor.patch Docker tags publish to.
+def mainSleVersion = '15.4'
+
 def isStable = env.TAG_NAME != null ? true : false
 pipeline {
 
@@ -40,9 +44,10 @@ pipeline {
 
     environment {
         DOCKER_ARGS = getDockerBuildArgs(name: getRepoName(), description: 'A cloud-init DataSource.')
-        GO_VERSION = sh(returnStdout: true, script: 'grep -Eo "^go .*" go.mod | cut -d " " -f2').trim()
         NAME = getRepoName()
-        VERSION = sh(returnStdout: true, script: "git describe --tags | tr -s '-' '_' | tr -d '^v'").trim()
+        GO_VERSION = sh(returnStdout: true, script: 'grep -Eo "^go .*" go.mod | cut -d " " -f2').trim()
+        IMAGE_VERSION = sh(returnStdout: true, script: "git describe --tags | tr -s '-' '_' | tr -d '^v'").trim()
+        VERSION = sh(returnStdout: true, script: "git describe --tags | tr -s '-' '~' | tr -d '^v'").trim()
     }
 
     stages {
@@ -55,46 +60,81 @@ pipeline {
 
         stage('Publish: Image') {
             steps {
-                publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: isStable)
+                publishCsmDockerImage(image: env.NAME, tag: env.IMAGE_VERSION, isStable: isStable)
             }
         }
 
-        stage('Prepare: RPMs') {
-            agent {
-                docker {
-                    label 'docker'
-                    reuseNode true
-                    image "${goImage}:${env.GO_VERSION}"
+        stage('Build & Publish: RPM') {
+
+            matrix {
+
+                agent {
+                    node {
+                        label "metal-gcp-builder"
+                        customWorkspace "${env.WORKSPACE}/${sleVersion}/${env.GO_VERSION}"
+                    }
                 }
-            }
-            steps {
-                runLibraryScript("addRpmMetaData.sh", "${env.NAME}.spec")
-                sh "make rpm_prepare"
-                sh "git update-index --assume-unchanged ${env.NAME}.spec"
-            }
-        }
 
-        stage('Build: RPMs') {
-            agent {
-                docker {
-                    label 'docker'
-                    reuseNode true
-                    image "${goImage}:${env.GO_VERSION}"
-                    args "-v ${env.WORKSPACE}:/workspace"
+                axes {
+                    axis {
+                        name 'sleVersion'
+                        values 15.3, 15.4
+                    }
                 }
-            }
-            steps {
-                sh "make rpm"
-            }
-        }
 
-        stage('Publish: RPMs') {
-            steps {
-                script {
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", os: "sle-15sp2", arch: "x86_64", isStable: isStable)
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", os: "sle-15sp3", arch: "x86_64", isStable: isStable)
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", os: "sle-15sp2", arch: "src", isStable: isStable)
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", os: "sle-15sp3", arch: "src", isStable: isStable)
+                stages {
+
+                    stage('Prepare: RPMs') {
+                        agent {
+                            docker {
+                                label 'docker'
+                                reuseNode true
+                                image "${goImage}:${env.GO_VERSION}-SLES${sleVersion}"
+                            }
+                        }
+                        steps {
+                            runLibraryScript("addRpmMetaData.sh", "${env.NAME}.spec")
+                            sh "make rpm_prepare"
+                            sh "git update-index --assume-unchanged ${env.NAME}.spec"
+                        }
+                    }
+
+                    stage('Build: RPMs') {
+                        agent {
+                            docker {
+                                label 'docker'
+                                reuseNode true
+                                image "${goImage}:${env.GO_VERSION}-SLES${sleVersion}"
+                            }
+                        }
+                        steps {
+                            sh "make rpm"
+                        }
+                    }
+
+                    stage('Publish: RPMs') {
+                        steps {
+                            script {
+                                sles_version_parts = "${sleVersion}".tokenize('.')
+                                sles_major = "${sles_version_parts[0]}"
+                                sles_minor = "${sles_version_parts[1]}"
+                                publishCsmRpms(
+                                        arch: "x86_64",
+                                        component: env.NAME,
+                                        isStable: isStable,
+                                        os: "sle-${sles_major}sp${sles_minor}",
+                                        pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm",
+                                )
+                                publishCsmRpms(
+                                        arch: "src",
+                                        component: env.NAME,
+                                        isStable: isStable,
+                                        os: "sle-${sles_major}sp${sles_minor}",
+                                        pattern: "dist/rpmbuild/SRPMS/*.rpm",
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

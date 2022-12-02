@@ -21,7 +21,9 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-FROM        artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:1.18 as builder
+ARG         GO_VERSION
+ARG         SLE_VERSION
+FROM        artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:${GO_VERSION}-SLES${SLE_VERSION} as builder
 WORKDIR     /workspace
 COPY        . ./
 

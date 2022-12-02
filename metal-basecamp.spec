@@ -43,8 +43,8 @@ Requires: podman-cni-config
 %define imagedir %{_sharedstatedir}/cray/container-images/%{name}
 
 %define current_branch %(echo ${GIT_BRANCH} | sed -e 's,/.*$,,')
-# Note: Important for basecamp_tag to be the same as used in runPostBuild.sh
-%define basecamp_tag %(echo ${VERSION})
+%define short_name %(echo $NAME | awk -F- '\{print $NF\}')
+%define image_tag %(echo ${IMAGE_VERSION})
 
 %if "%(echo ${IS_STABLE})" == "true"
 %define bucket csm-docker/stable
@@ -53,55 +53,61 @@ Requires: podman-cni-config
 %endif
 
 # This needs to match what is created for the image
-%define basecamp_image artifactory.algol60.net/%{bucket}/%{name}:%{basecamp_tag}
+%define image artifactory.algol60.net/%{bucket}/%{name}:%{image_tag}
 
-%define basecamp_file  cray-metal-basecamp-%{basecamp_tag}.tar
+%define image_tar  %{name}-%{image_tag}.tar
 
 %description
-This RPM installs the daemon file for Basecamp, launched through podman.
+A cloud-init datasource that runs out of podman.
 
 %prep
 env
 %setup -q
-echo bucket: %{bucket} tag: %{basecamp_tag} current_branch: %{current_branch}
-timeout 15m sh -c 'until skopeo inspect docker://%{basecamp_image}; do sleep 10; done'
+echo bucket: %{bucket} tag: %{image_tag} current_branch: %{current_branch}
+timeout 15m sh -c 'until skopeo inspect docker://%{image}; do sleep 10; done'
 
 %build
-sed -e 's,@@basecamp-image@@,%{basecamp_image},g' \
-    -e 's,@@basecamp-path@@,%{imagedir}/%{basecamp_file},g' \
-    -i init/basecamp-init.sh
-skopeo copy docker://%{basecamp_image} docker-archive:%{basecamp_file}
+sed -e 's,@@%{short_name}-image@@,%{image},g' \
+    -e 's,@@%{short_name}-path@@,%{imagedir}/%{image_tar},g' \
+    -i init/%{short_name}-init.sh
+skopeo copy docker://%{image} docker-archive:%{image_tar}
 
 %install
-install -D -m 0644 -t %{buildroot}%{_unitdir} init/basecamp.service
-install -D -m 0755 -t %{buildroot}%{_sbindir} init/basecamp-init.sh
-ln -s %{_sbindir}/service %{buildroot}%{_sbindir}/rcbasecamp
-install -D -m 0644 -t %{buildroot}%{imagedir} %{basecamp_file}
+install -D -m 0644 -t %{buildroot}%{_unitdir} init/%{short_name}.service
+install -D -m 0755 -t %{buildroot}%{_sbindir} init/%{short_name}-init.sh
+ln -s %{_sbindir}/service %{buildroot}%{_sbindir}/rc%{short_name}
+install -D -m 0644 -t %{buildroot}%{imagedir} %{image_tar}
 
 %clean
-rm -f %{basecamp_file}
+rm -f %{image_tar}
 
 # These macros will handle sysv initscripts migration transparently (as long as initscripts and systemd services have similar names)
 # These also tell systemd about changed unit files--that systemctl daemon-reload should be invoked
 %pre
-%service_add_pre basecamp.service
+%service_add_pre %{short_name}.service
 
 %post
-%service_add_post basecamp.service
+%service_add_post %{short_name}.service
 
 %preun
-%service_del_preun basecamp.service
+%service_del_preun %{short_name}.service
 
-# During package update, %service_del_postun restarts units
 %postun
-%service_del_postun basecamp.service
+%service_del_postun %{short_name}.service
+# only on uninstalls stop and remove the container, for upgrades leave it alone.
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_syntax
+if [ $1 -eq 0 ] ; then
+    podman stop %{short_name}
+    podman rm %{short_name}
+    podman rmi %{name}
+fi
 
 %files
 %license LICENSE
 %doc README.adoc
 %defattr(-,root,root)
-%attr(755, root, root) %{_sbindir}/basecamp-init.sh
-%attr(644, root, root) %{_unitdir}/basecamp.service
-%{_sbindir}/rcbasecamp
-%{imagedir}/%{basecamp_file}
+%attr(755, root, root) %{_sbindir}/%{short_name}-init.sh
+%attr(644, root, root) %{_unitdir}/%{short_name}.service
+%{_sbindir}/rc%{short_name}
+%{imagedir}/%{image_tar}
 %changelog

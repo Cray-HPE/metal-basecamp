@@ -25,8 +25,20 @@ ifeq ($(NAME),)
 NAME := $(shell basename $(shell pwd))
 endif
 
+ifeq ($(IMAGE_VERSION),)
+IMAGE_VERSION := $(shell git describe --tags | tr -s '-' '_' | tr -d '^v')
+endif
+
 ifeq ($(VERSION),)
 VERSION := $(shell git describe --tags | tr -s '-' '~' | tr -d '^v')
+endif
+
+ifeq ($(GO_VERSION),)
+GO_VERSION := $(shell awk -v replace="'" '/goVersion/{gsub(replace,"", $$NF); print $$NF; exit}' Jenkinsfile.github)
+endif
+
+ifeq ($(SLE_VERSION),)
+SLE_VERSION := $(shell awk -v replace="'" '/mainSleVersion/{gsub(replace,"", $$NF); print $$NF; exit}' Jenkinsfile.github)
 endif
 
 GO_FILES?=$$(find . -name '*.go' |grep -v vendor)
@@ -152,4 +164,4 @@ version:
 	@go version
 
 image:
-	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+	docker build --pull ${DOCKER_ARGS} --build-arg SLE_VERSION='${SLE_VERSION}' --build-arg GO_VERSION='${GO_VERSION}' --tag '${NAME}:${IMAGE_VERSION}' .
