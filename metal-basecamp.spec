@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
 # to deal in the Software without restriction, including without limitation
 # the rights to use, copy, modify, merge, publish, distribute, sublicense,
 # and/or sell copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -64,13 +64,13 @@ A cloud-init datasource that runs out of podman.
 env
 %setup -q
 echo bucket: %{bucket} tag: %{image_tag} current_branch: %{current_branch}
-timeout 15m sh -c 'until skopeo inspect docker://%{image}; do sleep 10; done'
+timeout 15m sh -c 'until skopeo inspect --creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{image}; do sleep 10; done'
 
 %build
 sed -e 's,@@%{short_name}-image@@,%{image},g' \
     -e 's,@@%{short_name}-path@@,%{imagedir}/%{image_tar},g' \
     -i init/%{short_name}-init.sh
-skopeo copy docker://%{image} docker-archive:%{image_tar}
+skopeo copy --src-creds=%(echo $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN) docker://%{image} docker-archive:%{image_tar}
 
 %install
 install -D -m 0644 -t %{buildroot}%{_unitdir} init/%{short_name}.service
