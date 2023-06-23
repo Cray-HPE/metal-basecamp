@@ -23,7 +23,7 @@
 #
 ARG         GO_VERSION
 ARG         SLE_VERSION
-FROM        artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:${GO_VERSION}-SLES${SLE_VERSION} as builder
+FROM        artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:${GO_VERSION} as builder
 WORKDIR     /workspace
 COPY        . ./
 
