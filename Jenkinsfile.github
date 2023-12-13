@@ -103,7 +103,7 @@ pipeline {
 
                         steps {
                             runLibraryScript("addRpmMetaData.sh", "${env.NAME}.spec")
-                            sh "make prepare"
+                            sh "make rpm_prepare"
                             sh "git update-index --assume-unchanged ${env.NAME}.spec"
                         }
                     }

@@ -20,25 +20,31 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 SHELL := /bin/bash -o pipefail
+lc =$(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1))))))))))))))))))))))))))
 
 ifeq ($(NAME),)
-NAME := $(shell basename $(shell pwd))
+export NAME := $(shell basename $(shell pwd))
 endif
 
-ifeq ($(IMAGE_VERSION),)
-IMAGE_VERSION := $(shell git describe --tags | tr -s '-' '_' | sed 's/^v//')
+ifeq ($(ARCH),)
+export ARCH := $(shell uname -m)
 endif
 
 ifeq ($(VERSION),)
-VERSION := $(shell git describe --tags | tr -s '-' '~' | sed 's/^v//')
+export VERSION := $(shell git describe --tags | tr -s '-' '~' | tr -d '^v')
 endif
 
-ifeq ($(GO_VERSION),)
-GO_VERSION := $(shell awk -v replace="'" '/goVersion/{gsub(replace,"", $$NF); print $$NF; exit}' Jenkinsfile.github)
+# By default, if these are not set then set them to match the host.
+ifeq ($(GOOS),)
+OS := $(shell uname)
+export GOOS := $(call lc,$(OS))
 endif
-
-ifeq ($(SLE_VERSION),)
-SLE_VERSION := $(shell awk -v replace="'" '/mainSleVersion/{gsub(replace,"", $$NF); print $$NF; exit}' Jenkinsfile.github)
+ifeq ($(GOARCH),)
+	ifeq "$(ARCH)" "aarch64"
+		export GOARCH=arm64
+	else ifeq "$(ARCH)" "x86_64"
+		export GOARCH=amd64
+	endif
 endif
 
 GO_FILES?=$$(find . -name '*.go' |grep -v vendor)
@@ -51,12 +57,11 @@ TAG?=latest
 .BUILDTIME=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 CHANGELOG_VERSION_ORIG=$(grep -m1 \## CHANGELOG.MD | sed -e "s/\].*\$//" |sed -e "s/^.*\[//")
 CHANGELOG_VERSION=$(shell grep -m1 \ \[[0-9]*.[0-9]*.[0-9]*\] CHANGELOG.MD | sed -e "s/\].*$$//" |sed -e "s/^.*\[//")
-TEST_OUTPUT_DIR ?= $(CURDIR)/build/results
+BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SPEC_FILE := ${NAME}.spec
 SOURCE_NAME := ${NAME}-${VERSION}
-
-BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
+TEST_OUTPUT_DIR ?= $(CURDIR)/build/results
 
 
 # if we're an automated build, use .GIT_COMMIT_AND_BRANCH as-is, else add '-dirty'
@@ -79,14 +84,14 @@ endif
 	fmt \
 	tidy \
 	env \
-	build \
 	rpm \
 	doc \
-	version
+	version \
+	image
 
-all: fmt lint build
+all: bin/basecamp
 
-rpm: prepare rpm_package_source rpm_build_source rpm_build
+rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
 
 help:
 	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
@@ -106,16 +111,19 @@ help:
 	@echo '    rpm                Build a YUM/SUSE RPM.'
 	@echo '    doc                Start Go documentation server on port 8080.'
 	@echo '    version            Display Go version.'
+	@echo '    image              Build Docker image.'
 	@echo ''
 
 clean:
 	go clean -i ./...
 	rm -vf \
-	  $(CURDIR)/build/results/coverage/* \
+	  	$(CURDIR)/build/results/coverage/* \
 		$(CURDIR)/build/results/unittest/* \
-	$(RM) -rf $(BUILD_DIR)
+	$(RM) -rf \
+		bin \
+		$(BUILD_DIR)
 
-test: build
+test: tools
 	mkdir -pv $(TEST_OUTPUT_DIR)/unittest $(TEST_OUTPUT_DIR)/coverage
 	go test ./cmd/... ./internal/...  -v -coverprofile $(TEST_OUTPUT_DIR)/coverage.out -covermode count | tee "$(TEST_OUTPUT_DIR)/testing.out"
 	cat "$(TEST_OUTPUT_DIR)/testing.out" | go-junit-report | tee "$(TEST_OUTPUT_DIR)/unittest/testing.xml" | tee "$(TEST_OUTPUT_DIR)/unittest/testing.xml"
@@ -130,7 +138,7 @@ tools:
 vet: version
 	go vet -v ./...
 
-lint:
+lint: tools
 	golint -set_exit_status ./cmd/...
 	golint -set_exit_status ./internal/...
 
@@ -143,25 +151,22 @@ env:
 tidy:
 	go mod tidy
 
-build: fmt vet
-	go build -o bin/basecamp ./cmd/main.go
+bin/basecamp:
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/basecamp ./cmd/main.go
 
-prepare:
+rpm_prepare:
 	rm -rf $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/SPECS $(BUILD_DIR)/SOURCES
 	cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
 
-# touch the archive before creating it to prevent 'tar: .: file changed as we read it' errors
 rpm_package_source:
-	touch $(SOURCE_PATH)
-	tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .nox --exclude dist/rpmbuild --exclude ${SOURCE_NAME}.tar.bz2 -cvjf $(SOURCE_PATH) .
+	tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
-	rpmbuild -bs $(BUILD_DIR)/SPECS/$(SPEC_FILE) --target ${ARCH} --define "_topdir $(BUILD_DIR)"
+	rpmbuild --nodeps --target $(ARCH) -ts $(SOURCE_PATH) --define "_topdir $(BUILD_DIR)"
 
 rpm_build:
-	rpmbuild -ba $(BUILD_DIR)/SPECS/$(SPEC_FILE) --target ${ARCH} --define "_topdir $(BUILD_DIR)"
-
+	rpmbuild --nodeps --target $(ARCH) -ba $(SPEC_FILE) --define "_topdir $(BUILD_DIR)"
 
 doc:
 	godoc -http=:8080 -index
@@ -170,4 +175,4 @@ version:
 	@go version
 
 image:
-	docker build --pull ${DOCKER_ARGS} --build-arg SLE_VERSION='${SLE_VERSION}' --build-arg GO_VERSION='${GO_VERSION}' --tag '${NAME}:${IMAGE_VERSION}' .
+	docker build --pull ${DOCKER_ARGS} --build-arg SLE_VERSION='${SLE_VERSION}' --build-arg GO_VERSION='${GO_VERSION}' --build-arg GOARCH='${GOARCH}' --build-arg GOOS='${GOOS}' --tag '${NAME}:${IMAGE_VERSION}' .

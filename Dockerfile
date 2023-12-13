@@ -24,14 +24,16 @@
 ARG         GO_VERSION
 ARG         SLE_VERSION
 FROM        artifactory.algol60.net/csm-docker/stable/csm-docker-sle-go:${GO_VERSION} as builder
+ARG         GOARCH
+ARG         GOOS
 WORKDIR     /workspace
 COPY        . ./
 
 RUN         CGO_ENABLED=0 \
-            GOOS=linux \
-            GOARCH=amd64 \
+            GOOS=$GOOS \
+            GOARCH=$GOARCH \
             GO111MODULE=on \
-            make build
+            make bin/basecamp
 
 FROM        artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.15
 WORKDIR     /app
