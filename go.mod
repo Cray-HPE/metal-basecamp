@@ -3,7 +3,7 @@ module github.com/Cray-HPE/metal-basecamp
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/mostlygeek/arp v0.0.0-20170424181311-541a2129847a
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.19.0
 	gopkg.in/yaml.v2 v2.4.0
 )
